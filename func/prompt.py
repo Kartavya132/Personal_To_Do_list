@@ -8,12 +8,29 @@ COMMANDS = {
             ("new", "account"),
             ("new", "acc"),
             ("create", "acc"),
+            ("please", "create", "an", "account"),
         ],
         "description": "Create a new account",
         "action": "create_account",
     },
+    "account_status": {
+        "keywords": [
+            ("account", "status"),
+            ("my", "account"),
+            ("show", "account"),
+            ("view", "account"),
+            ("show", "my", "account"),
+            ("view", "account", "status"),
+        ],
+        "description": "View your account and account status",
+        "action": "account_status",
+    },
     "delete_account": {
-        "keywords": [("delete", "account"), ("delete", "acc")],
+        "keywords": [
+            ("delete", "account"),
+            ("delete", "acc"),
+            ("please", "delete", "an", "account"),
+        ],
         "description": "Delete your account",
         "action": "delete_account",
     },
@@ -30,11 +47,17 @@ def parse_command(user_input):
     Parse user input and identify the command.
     Returns a dictionary with command info or None if no match.
     """
-    user_input_lower = user_input.lower().strip()
+    if user_input is None:
+        return None
+
+    cleaned = user_input.strip()
+    if not cleaned or cleaned != cleaned.lower():
+        return None
+
+    user_input_lower = cleaned.lower()
 
     for cmd_name, cmd_info in COMMANDS.items():
         for keyword_set in cmd_info["keywords"]:
-            # Check if all keywords in the set are present in the input
             if all(keyword in user_input_lower for keyword in keyword_set):
                 return {
                     "command": cmd_name,
@@ -64,47 +87,32 @@ def show_help():
 def prompts(user_input):
     """
     Main prompt handler that parses user input and processes commands.
-    Returns the command action or "invalid" if no command matched.
+    Returns None for valid commands, "exit" when quitting, or None for invalid.
     """
     if not user_input or not user_input.strip():
-        print(
-            "\n⚠️  Please enter a valid command. Type 'help' to see available commands.\n"
-        )
-        return "invalid"
+        print("Enter the invalid Input")
+        return None
 
-    # Check for help command
-    if user_input.lower().strip() in ["help", "?", "h"]:
+    if user_input.strip().lower() in ["help", "?", "h"]:
         show_help()
-        return "help"
+        return None
 
-    # Parse the user input
     result = parse_command(user_input)
 
     if result is None:
-        print("\n❌ Command not recognized. Type 'help' for available commands.\n")
-        return "invalid"
+        print("Enter the invalid Input")
+        return None
 
-    # Execute the matched command
     action = result["action"]
 
-    if action == "create_account":
-        print("\n✅ Command recognized: Create Account\n")
-        # Placeholder - actual account creation handled in main flow
-        return "create_account"
-
-    elif action == "delete_account":
-        print("\n✅ Command recognized: Delete Account\n")
-        # Placeholder - actual deletion would be handled elsewhere
-        return "delete_account"
-
-    elif action == "exit":
+    if action == "exit":
         print("\n" + "╔" + "═" * 48 + "╗")
         print("║" + "✨ Thank You For Using To-Do List! ✨".center(48) + "║")
         print("║" + "See you soon. Good Bye! 👋".center(48) + "║")
         print("╚" + "═" * 48 + "╝" + "\n")
         exit()
 
-    return action
+    return None
 
 
 if __name__ == "__main__":

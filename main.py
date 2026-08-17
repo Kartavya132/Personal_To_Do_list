@@ -22,7 +22,7 @@ def main():
 
     while True:
         print("\n" + "╔" + "═" * 48 + "╗")
-        print("║" + "Welcome to To-Do List".center(48) + "║")
+        print("║" + "Welcome to To-Do list".center(48) + "║")
         print("╚" + "═" * 48 + "╝" + "\n")
 
         question = input("📋 Do you have an account? (yes/no): ").strip().lower()
@@ -36,36 +36,26 @@ def main():
 
             if user is not None:
                 current_user = user
-                print(f"\n✅ Welcome back, {user['Name']}!\n")
+                print(f"\n✅ Welcome, {user['Name']}!\n")
                 data.display_account(user)
+                return
 
-                # Main menu loop for logged-in user
-                while True:
-                    print("─" * 50)
-                    print("💡 Tip: Type 'help' for available commands")
-                    print("─" * 50)
-                    user_command = input("\n👉 Command: ").strip()
-
-                    if not user_command:
-                        continue
-
-                    result = pt.prompts(user_command)
-
-                    if result == "help":
-                        continue
-                    elif result == "exit":
-                        return
-                    elif result == "invalid":
-                        continue
+            else:
+                print(
+                    "\n⚠️  Login failed. Try a command below or re-enter your account.\n"
+                )
+                user_command = input("👉 Command: ").strip()
+                if user_command:
+                    pt.prompts(user_command)
+                continue
 
         elif question in ["n", "no"]:
             print_header("🎉 CREATE NEW ACCOUNT 🎉")
-            new_account = fnf.acc_account()
-            if new_account:
-                print("\n" + "✨" * 25)
-                print("\n  🎊 Account Successfully Created! 🎊\n")
-                print("✨" * 25 + "\n")
-                break
+            fnf.acc_account()
+            print("\n" + "✨" * 25)
+            print("\n  🎊 Account Successfully Created! 🎊\n")
+            print("✨" * 25 + "\n")
+            break
 
         else:
             print("\n❌ Invalid input! Please enter 'yes' or 'no'.")
@@ -73,6 +63,8 @@ def main():
             if choice == "0":
                 print_header("👋 THANK YOU FOR USING TO-DO LIST 👋")
                 exit()
+            if choice == "1":
+                continue
 
 
 if __name__ == "__main__":
