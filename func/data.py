@@ -107,22 +107,28 @@ def load_list():
 def save_account(account_data):
     try:
         if isinstance(account_data, dict):
-            df = pd.DataFrame([account_data])
+            new_df = pd.DataFrame([account_data])
         else:
-            df = account_data.copy()
+            new_df = account_data.copy()
 
-        df = _normalise_columns(df, ACCOUNT_COLUMNS)
+        new_df = _normalise_columns(new_df, ACCOUNT_COLUMNS)
 
-        file_exists = os.path.exists(DATA_ACC) and os.path.getsize(DATA_ACC) > 0
         directory = os.path.dirname(DATA_ACC)
         if directory and not os.path.exists(directory):
             os.makedirs(directory, exist_ok=True)
 
+        file_exists = os.path.exists(DATA_ACC) and os.path.getsize(DATA_ACC) > 0
+
         if file_exists:
-            df.to_csv(DATA_ACC, index=False, mode="a", header=False)
+            # Read existing data and append new data
+            existing_df = pd.read_csv(DATA_ACC)
+            existing_df = _normalise_columns(existing_df, ACCOUNT_COLUMNS)
+            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+            combined_df.to_csv(DATA_ACC, index=False)
         else:
-            df.to_csv(DATA_ACC, index=False, mode="w")
-        print("Account saved successfully!")
+            # Create new file with header and data
+            new_df.to_csv(DATA_ACC, index=False)
+
         return True
     except Exception as e:
         print(f"Error saving account: {e}")
@@ -132,26 +138,50 @@ def save_account(account_data):
 def save_list(list_data):
     try:
         if isinstance(list_data, dict):
-            df = pd.DataFrame([list_data])
+            new_df = pd.DataFrame([list_data])
         else:
-            df = list_data.copy()
+            new_df = list_data.copy()
 
-        df = _normalise_columns(df, LIST_COLUMNS)
+        new_df = _normalise_columns(new_df, LIST_COLUMNS)
 
-        file_exists = os.path.exists(DATA_LIST) and os.path.getsize(DATA_LIST) > 0
         directory = os.path.dirname(DATA_LIST)
         if directory and not os.path.exists(directory):
             os.makedirs(directory, exist_ok=True)
 
+        file_exists = os.path.exists(DATA_LIST) and os.path.getsize(DATA_LIST) > 0
+
         if file_exists:
-            df.to_csv(DATA_LIST, index=False, mode="a", header=False)
+            # Read existing data and append new data
+            existing_df = pd.read_csv(DATA_LIST)
+            existing_df = _normalise_columns(existing_df, LIST_COLUMNS)
+            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+            combined_df.to_csv(DATA_LIST, index=False)
         else:
-            df.to_csv(DATA_LIST, index=False, mode="w")
-        print("List item saved successfully!")
+            # Create new file with header and data
+            new_df.to_csv(DATA_LIST, index=False)
+
         return True
     except Exception as e:
-        print(f"Error saving list: {e}")
+        print(f"Error saving list item: {e}")
         return False
+
+
+def display_account(account_data):
+    if account_data is None or (isinstance(account_data, dict) and not account_data):
+        print("\n⚠️  No account data to display.\n")
+        return
+
+    print("\n" + "╔" + "═" * 48 + "╗")
+    print("║" + "👤 ACCOUNT INFORMATION 👤".center(48) + "║")
+    print("╠" + "═" * 48 + "╣")
+    print(f"║ 🆔 Account Number: {str(account_data.get('Account', 'N/A')):<34} ║")
+    print(f"║ 👤 Name:          {str(account_data.get('Name', 'N/A')):<34} ║")
+    print(f"║ 📧 Email:         {str(account_data.get('email', 'N/A')):<34} ║")
+    print("╠" + "═" * 48 + "╣")
+    print(f"║ 📝 Total TODOs:    {str(account_data.get('total_todos', 0)):<34} ║")
+    print(f"║ ⚡ Strikes:        {str(account_data.get('strike', 0)):<34} ║")
+    print(f"║ 🔥 Max Strikes:    {str(account_data.get('max_strike', 0)):<34} ║")
+    print("╚" + "═" * 48 + "╝" + "\n")
 
 
 if __name__ == "__main__":

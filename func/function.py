@@ -4,6 +4,9 @@ from . import data
 
 
 def acc_account():
+    print("\n" + "─" * 50)
+    print("🔧 Starting Account Creation Process...")
+    print("─" * 50 + "\n")
     acc_data = data.load_account()
     existing_accounts = set()
     if acc_data is not None and not acc_data.empty and "Account" in acc_data.columns:
@@ -16,15 +19,15 @@ def acc_account():
         if acnt not in existing_accounts:
             break
 
-    name = input("Enter your name: ").strip()
-    email = input("Enter your email: ").strip()
+    name = input("👤 Enter your name: ").strip()
+    email = input("📧 Enter your email: ").strip()
 
     while True:
-        password = input("Enter your password: ")
-        confirm_password = input("Re-enter your password: ")
+        password = input("🔒 Enter your password: ")
+        confirm_password = input("🔒 Re-enter your password: ")
         if password == confirm_password:
             break
-        print("Passwords do not match. Please try again.")
+        print("\n❌ Passwords do not match. Please try again.\n")
 
     account = {
         "Account": acnt,
@@ -36,8 +39,14 @@ def acc_account():
         "max_strike": 0,
     }
 
-    data.save_account(account)
-    return account
+    # Save account and display it if successful
+    if data.save_account(account):
+        print(f"\n✅ Account saved successfully! Account #{acnt}\n")
+        data.display_account(account)
+        return account
+    else:
+        print("\n❌ Failed to save account. Please try again.\n")
+        return None
 
 
 def check_account(account=None, password=None):
