@@ -1,4 +1,5 @@
 import random
+from datetime import datetime
 
 from . import data
 
@@ -74,6 +75,64 @@ def check_account(account=None, password=None):
         return None
 
     return match.iloc[0].to_dict()
+
+
+def show_account_status(account):
+    """Display the account currently signed in to the application."""
+    if not account:
+        print("Please sign in before viewing account status.")
+        return None
+
+    data.display_account(account)
+    return account
+
+
+def add_task(account):
+    """Collect and save one task for the signed-in account."""
+    if not account or not account.get("Account"):
+        print("Please sign in before adding a task.")
+        return None
+
+    head = input("Task title: ").strip()
+    if not head:
+        print("A task title is required.")
+        return None
+
+    detail = input("Task details (optional): ").strip()
+    task = {
+        "acc_no": str(account["Account"]).strip(),
+        "head": head,
+        "detail": detail,
+        "status": "pending",
+        "created_date_time": datetime.now().isoformat(timespec="seconds"),
+        "comp_date_time": "",
+    }
+
+    if data.save_list(task):
+        print("Task added successfully!")
+        return task
+
+    print("Unable to save the task. Please try again.")
+    return None
+
+
+def dispatch_command(action, current_user=None):
+    """Run a parsed prompt action and return its result.
+
+    ``exit`` is intentionally handled by the application loop because it
+    controls the lifetime of the program rather than a data operation.
+    """
+    handlers = {
+        "create_account": lambda: acc_account(),
+        "account_status": lambda: show_account_status(current_user),
+        "add_task": lambda: add_task(current_user),
+    }
+
+    handler = handlers.get(action)
+    if handler is None:
+        print("That command is not available yet.")
+        return None
+    return handler()
 
 
 if __name__ == "__main__":

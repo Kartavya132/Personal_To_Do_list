@@ -6,7 +6,9 @@ import main
 def test_main_logs_in_and_stops(monkeypatch, capsys):
     answers = iter(["y", "A123", "secret"])
     monkeypatch.setattr("builtins.input", lambda _: next(answers))
-    monkeypatch.setattr(main.fnf, "check_account", lambda account, password: {"Name": "Jane"})
+    monkeypatch.setattr(
+        main.fnf, "check_account", lambda account, password: {"Name": "Jane"}
+    )
 
     main.main()
 
@@ -24,12 +26,11 @@ def test_main_creates_account_when_user_has_no_account(monkeypatch):
     assert created == [True]
 
 
-def test_main_invalid_choice_zero_exits(monkeypatch):
+def test_main_invalid_choice_zero_returns_cleanly(monkeypatch):
     answers = iter(["maybe", "0"])
     monkeypatch.setattr("builtins.input", lambda _: next(answers))
 
-    with pytest.raises(SystemExit):
-        main.main()
+    main.main()
 
 
 def test_main_invalid_choice_one_returns_to_menu(monkeypatch, capsys):
@@ -59,3 +60,32 @@ def test_main_failed_login_dispatches_prompts(monkeypatch):
         main.main()
 
     assert called == ["delete account"]
+
+
+def test_main_output_uses_stable_spacing(monkeypatch, capsys):
+    answers = iter(["n"])
+    monkeypatch.setattr("builtins.input", lambda _: next(answers))
+    monkeypatch.setattr(main.fnf, "acc_account", lambda: None)
+
+    main.main()
+
+    output = capsys.readouterr().out
+    assert "\n\n\n" not in output
+    assert output.count("Welcome to To-Do list") == 1
+
+
+def test_authenticated_command_is_dispatched(monkeypatch):
+    answers = iter(["y", "A123", "secret", "account status", "exit"])
+    monkeypatch.setattr("builtins.input", lambda _: next(answers))
+    monkeypatch.setattr(main.fnf, "check_account", lambda *_: {"Account": "A123", "Name": "Jane"})
+
+    dispatched = []
+    monkeypatch.setattr(
+        main.fnf,
+        "dispatch_command",
+        lambda action, user: dispatched.append((action, user)),
+    )
+
+    main.main()
+
+    assert dispatched == [("account_status", {"Account": "A123", "Name": "Jane"})]

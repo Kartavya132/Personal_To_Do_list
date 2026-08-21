@@ -1,6 +1,3 @@
-from sys import exit
-
-# Command definitions with keywords
 COMMANDS = {
     "create_account": {
         "keywords": [
@@ -24,6 +21,17 @@ COMMANDS = {
         ],
         "description": "View your account and account status",
         "action": "account_status",
+    },
+    "add_task": {
+        "keywords": [
+            ("add", "task"),
+            ("new", "task"),
+            ("please", "add", "task"),
+            ("renew", "task"),
+            ("make", "task"),
+        ],
+        "description": "Adding a new task",
+        "action": "add_task",
     },
     "delete_account": {
         "keywords": [
@@ -51,7 +59,7 @@ def parse_command(user_input):
         return None
 
     cleaned = user_input.strip()
-    if not cleaned or cleaned != cleaned.lower():
+    if not cleaned:
         return None
 
     user_input_lower = cleaned.lower()
@@ -69,7 +77,6 @@ def parse_command(user_input):
 
 
 def show_help():
-    """Display available commands"""
     print("\n" + "╔" + "═" * 48 + "╗")
     print("║" + "📚 AVAILABLE COMMANDS 📚".center(48) + "║")
     print("╠" + "═" * 48 + "╣")
@@ -85,34 +92,27 @@ def show_help():
 
 
 def prompts(user_input):
-    """
-    Main prompt handler that parses user input and processes commands.
-    Returns None for valid commands, "exit" when quitting, or None for invalid.
+    """Convert a user command into an action for the application to run.
+
+    This module only handles command parsing and display.  ``main`` dispatches
+    the returned action to the matching function, where account and data work
+    belongs.
     """
     if not user_input or not user_input.strip():
-        print("Enter the invalid Input")
+        print("Invalid command. Type 'help' to see the available commands.")
         return None
 
     if user_input.strip().lower() in ["help", "?", "h"]:
         show_help()
-        return None
+        return "help"
 
     result = parse_command(user_input)
 
     if result is None:
-        print("Enter the invalid Input")
+        print("Invalid command. Type 'help' to see the available commands.")
         return None
 
-    action = result["action"]
-
-    if action == "exit":
-        print("\n" + "╔" + "═" * 48 + "╗")
-        print("║" + "✨ Thank You For Using To-Do List! ✨".center(48) + "║")
-        print("║" + "See you soon. Good Bye! 👋".center(48) + "║")
-        print("╚" + "═" * 48 + "╝" + "\n")
-        exit()
-
-    return None
+    return result["action"]
 
 
 if __name__ == "__main__":
