@@ -116,23 +116,93 @@ def add_task(account):
     return None
 
 
+def complete_task(account):
+    """Let the signed-in user select a task and mark it as completed."""
+    if not account or not account.get("Account"):
+        print("Please sign in before completing a task.")
+        return None
+
+    task_df = data.load_list()
+    if task_df is None or task_df.empty or "acc_no" not in task_df.columns:
+        print("You do not have any tasks yet.")
+        return None
+
+    account_id = str(account["Account"]).strip()
+    account_tasks = task_df[task_df["acc_no"].astype(str).str.strip() == account_id]
+    if account_tasks.empty:
+        print("You do not have any tasks yet.")
+        return None
+
+    print("\nYour tasks:")
+    for series, (_, task) in enumerate(account_tasks.iterrows(), start=1):
+        print(
+            f"{series}. {task.get('head', 'Untitled')} "
+            f"[{task.get('status', 'pending')}]"
+        )
+
+    selected_series = input("Enter the task series to complete: ").strip()
+    try:
+        series_number = int(selected_series)
+    except ValueError:
+        print("Please enter a valid task series number.")
+        return None
+
+    completed = data.complete_task(account_id, series_number)
+    if completed is None:
+        print("That task series does not exist.")
+        return None
+
+    print(f"Task {series_number} completed successfully!")
+    return completed
+
+
+def delete_account(account):
+    """Delete the signed-in account after explicit confirmation."""
+    if not account or not account.get("Account"):
+        print("Please sign in before deleting your account.")
+        return False
+
+    confirmation = (
+        input("Type 'delete' to permanently delete your account: ").strip().lower()
+    )
+    if confirmation != "delete":
+        print("Account deletion cancelled.")
+        return False
+
+    if data.delete_account(account["Account"]):
+        print("Account and its tasks deleted successfully.")
+        return True
+
+    print("Unable to delete the account. Please try again.")
+    return False
+
+
+ACTION_HANDLERS = {}
+
+
+def register_action(action, handler):
+    """Register the function that should run for a parsed prompt action."""
+    ACTION_HANDLERS[action] = handler
+
+
+register_action("create_account", lambda _account=None: acc_account())
+register_action("account_status", show_account_status)
+register_action("add_task", add_task)
+register_action("complete_task", complete_task)
+register_action("delete_account", delete_account)
+
+
 def dispatch_command(action, current_user=None):
     """Run a parsed prompt action and return its result.
 
     ``exit`` is intentionally handled by the application loop because it
     controls the lifetime of the program rather than a data operation.
     """
-    handlers = {
-        "create_account": lambda: acc_account(),
-        "account_status": lambda: show_account_status(current_user),
-        "add_task": lambda: add_task(current_user),
-    }
-
-    handler = handlers.get(action)
+    handler = ACTION_HANDLERS.get(action)
     if handler is None:
         print("That command is not available yet.")
         return None
-    return handler()
+    return handler(current_user)
 
 
 if __name__ == "__main__":

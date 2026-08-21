@@ -33,6 +33,17 @@ COMMANDS = {
         "description": "Adding a new task",
         "action": "add_task",
     },
+    "complete_task": {
+        "keywords": [
+            ("complete", "task"),
+            ("end", "task"),
+            ("please", "completed", "task"),
+            ("over", "task"),
+            ("comp", "task"),
+        ],
+        "description": "complete a task task",
+        "action": "complete_task",
+    },
     "delete_account": {
         "keywords": [
             ("delete", "account"),

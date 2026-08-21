@@ -5,10 +5,19 @@ from func import data, function
 
 
 def account_frame(password="secret"):
-    return pd.DataFrame([{
-        "Account": " A123 ", "Name": "Jane Doe", "Password": f" {password} ",
-        "email": "jane@example.com", "strike": 0, "total_todos": 0, "max_strike": 0,
-    }])
+    return pd.DataFrame(
+        [
+            {
+                "Account": " A123 ",
+                "Name": "Jane Doe",
+                "Password": f" {password} ",
+                "email": "jane@example.com",
+                "strike": 0,
+                "total_todos": 0,
+                "max_strike": 0,
+            }
+        ]
+    )
 
 
 def test_check_account_accepts_trimmed_credentials(monkeypatch):
@@ -20,8 +29,12 @@ def test_check_account_accepts_trimmed_credentials(monkeypatch):
     assert result["Account"] == " A123 "
 
 
-@pytest.mark.parametrize("loaded", [None, pd.DataFrame(), pd.DataFrame(columns=data.ACCOUNT_COLUMNS)])
-def test_check_account_handles_missing_or_empty_account_store(loaded, monkeypatch, capsys):
+@pytest.mark.parametrize(
+    "loaded", [None, pd.DataFrame(), pd.DataFrame(columns=data.ACCOUNT_COLUMNS)]
+)
+def test_check_account_handles_missing_or_empty_account_store(
+    loaded, monkeypatch, capsys
+):
     monkeypatch.setattr(data, "load_account", lambda: loaded)
 
     assert function.check_account("A123", "secret") is None
@@ -51,7 +64,11 @@ def test_check_account_rejects_wrong_password(monkeypatch, capsys):
 
 
 def test_check_account_handles_row_without_password(monkeypatch, capsys):
-    monkeypatch.setattr(data, "load_account", lambda: pd.DataFrame([{"Account": "A123", "Name": "Jane"}]))
+    monkeypatch.setattr(
+        data,
+        "load_account",
+        lambda: pd.DataFrame([{"Account": "A123", "Name": "Jane"}]),
+    )
 
     assert function.check_account("A123", "") == {"Account": "A123", "Name": "Jane"}
     assert capsys.readouterr().out == ""
@@ -60,26 +77,41 @@ def test_check_account_handles_row_without_password(monkeypatch, capsys):
 def test_acc_account_retries_password_and_saves_new_account(monkeypatch):
     monkeypatch.setattr(data, "load_account", lambda: account_frame())
     generated = iter(["Ab", "Ab"])
-    monkeypatch.setattr(function.random, "choices", lambda *_args, **_kwargs: list(next(generated)))
+    monkeypatch.setattr(
+        function.random, "choices", lambda *_args, **_kwargs: list(next(generated))
+    )
     monkeypatch.setattr(function.random, "randint", lambda *_args: 4)
     saved = []
-    monkeypatch.setattr(data, "save_account", lambda account: saved.append(account) or True)
-    answers = iter(["  Alice  ", " alice@example.com ", "first", "mismatch", "correct", "correct"])
+    monkeypatch.setattr(
+        data, "save_account", lambda account: saved.append(account) or True
+    )
+    answers = iter(
+        ["  Alice  ", " alice@example.com ", "first", "mismatch", "correct", "correct"]
+    )
     monkeypatch.setattr("builtins.input", lambda _: next(answers))
 
     result = function.acc_account()
 
     assert result == saved[0]
     assert result == {
-        "Account": "Ab4", "Name": "Alice", "Password": "correct", "email": "alice@example.com",
-        "strike": 0, "total_todos": 0, "max_strike": 0,
+        "Account": "Ab4",
+        "Name": "Alice",
+        "Password": "correct",
+        "email": "alice@example.com",
+        "strike": 0,
+        "total_todos": 0,
+        "max_strike": 0,
     }
 
 
 def test_acc_account_regenerates_when_candidate_already_exists(monkeypatch):
-    monkeypatch.setattr(data, "load_account", lambda: pd.DataFrame({"Account": ["Ab4"]}))
+    monkeypatch.setattr(
+        data, "load_account", lambda: pd.DataFrame({"Account": ["Ab4"]})
+    )
     candidates = iter(["Ab", "Cd"])
-    monkeypatch.setattr(function.random, "choices", lambda *_args, **_kwargs: list(next(candidates)))
+    monkeypatch.setattr(
+        function.random, "choices", lambda *_args, **_kwargs: list(next(candidates))
+    )
     monkeypatch.setattr(function.random, "randint", lambda *_args: 4)
     monkeypatch.setattr(data, "save_account", lambda account: True)
     answers = iter(["Name", "email", "pw", "pw"])
@@ -88,13 +120,63 @@ def test_acc_account_regenerates_when_candidate_already_exists(monkeypatch):
     assert function.acc_account()["Account"] == "Cd4"
 
 
-@pytest.mark.parametrize("loaded", [None, pd.DataFrame(), pd.DataFrame(columns=["Name"])])
-def test_acc_account_supports_unavailable_or_unrecognised_account_data(loaded, monkeypatch):
+@pytest.mark.parametrize(
+    "loaded", [None, pd.DataFrame(), pd.DataFrame(columns=["Name"])]
+)
+def test_acc_account_supports_unavailable_or_unrecognised_account_data(
+    loaded, monkeypatch
+):
     monkeypatch.setattr(data, "load_account", lambda: loaded)
-    monkeypatch.setattr(function.random, "choices", lambda *_args, **_kwargs: list("Qz"))
+    monkeypatch.setattr(
+        function.random, "choices", lambda *_args, **_kwargs: list("Qz")
+    )
     monkeypatch.setattr(function.random, "randint", lambda *_args: 9)
     monkeypatch.setattr(data, "save_account", lambda account: True)
     answers = iter(["Name", "email", "pw", "pw"])
     monkeypatch.setattr("builtins.input", lambda _: next(answers))
 
     assert function.acc_account()["Account"] == "Qz9"
+
+
+def test_complete_task_selects_series_and_updates_task(monkeypatch):
+    account = {"Account": "A123"}
+    tasks = pd.DataFrame(
+        [
+            {
+                "acc_no": "A123",
+                "head": "Study",
+                "status": "pending",
+                "comp_date_time": "",
+            },
+            {
+                "acc_no": "A123",
+                "head": "Exercise",
+                "status": "pending",
+                "comp_date_time": "",
+            },
+            {
+                "acc_no": "B456",
+                "head": "Other",
+                "status": "pending",
+                "comp_date_time": "",
+            },
+        ]
+    )
+    monkeypatch.setattr(function.data, "load_list", lambda: tasks)
+    monkeypatch.setattr(
+        function.data,
+        "complete_task",
+        lambda account_id, series: {
+            "acc_no": account_id,
+            "head": "Exercise",
+            "status": "completed",
+            "comp_date_time": "2026-08-21T12:00:00",
+        },
+    )
+    monkeypatch.setattr("builtins.input", lambda _: "2")
+
+    result = function.complete_task(account)
+
+    assert result["head"] == "Exercise"
+    assert result["status"] == "completed"
+    assert result["comp_date_time"]

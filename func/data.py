@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import pandas as pd
 
@@ -104,7 +105,11 @@ def load_list():
         df = pd.read_csv(DATA_LIST)
         if df.empty:
             return pd.DataFrame(columns=LIST_COLUMNS)
-        return _normalise_columns(df, LIST_COLUMNS)
+        return _normalise_columns(
+            df,
+            LIST_COLUMNS,
+            aliases={"Account": "acc_no", "acc": "acc_no", "account": "acc_no"},
+        )
 
     except FileNotFoundError as e:
         print(f"Error: {e}")
@@ -112,6 +117,33 @@ def load_list():
     except pd.errors.EmptyDataError:
         return pd.DataFrame(columns=LIST_COLUMNS)
     except Exception:
+        return None
+
+
+def complete_task(account, series):
+    """Mark one account task as completed using its displayed series number."""
+    try:
+        task_df = load_list()
+        if task_df is None or task_df.empty or "acc_no" not in task_df.columns:
+            return None
+
+        account_id = str(account).strip()
+        series_number = int(series)
+        if series_number < 1:
+            return None
+
+        account_tasks = task_df[task_df["acc_no"].astype(str).str.strip() == account_id]
+        if series_number > len(account_tasks):
+            return None
+
+        task_index = account_tasks.index[series_number - 1]
+        task_df.loc[task_index, "status"] = "completed"
+        task_df.loc[task_index, "comp_date_time"] = datetime.now().isoformat(
+            timespec="seconds"
+        )
+        task_df.to_csv(DATA_LIST, index=False)
+        return task_df.loc[task_index].to_dict()
+    except (TypeError, ValueError, KeyError):
         return None
 
 
@@ -145,6 +177,31 @@ def save_account(account_data):
     except Exception as e:
         print(f"Error saving account: {e}")
         return False
+
+
+def delete_account(account):
+    """Delete an account and its tasks from the CSV data stores."""
+    account_id = str(account).strip()
+    if not account_id:
+        return False
+
+    account_df = load_account()
+    if account_df is None or "Account" not in account_df.columns:
+        return False
+
+    matches = account_df["Account"].astype(str).str.strip() == account_id
+    if not matches.any():
+        return False
+
+    remaining_accounts = account_df.loc[~matches].reindex(columns=ACCOUNT_COLUMNS)
+    remaining_accounts.to_csv(DATA_ACC, index=False)
+
+    task_df = load_list()
+    if task_df is not None and "acc_no" in task_df.columns:
+        task_matches = task_df["acc_no"].astype(str).str.strip() == account_id
+        task_df.loc[~task_matches].to_csv(DATA_LIST, index=False)
+
+    return True
 
 
 def save_list(list_data):
@@ -231,17 +288,26 @@ def display_account(account_data):
         print("\n⚠️  No account data to display.\n")
         return
 
-    print("\n" + "╔" + "═" * 48 + "╗")
-    print("║" + "👤 ACCOUNT INFORMATION 👤".center(48) + "║")
-    print("╠" + "═" * 48 + "╣")
-    print(f"║ 🆔 Account Number: {str(account_data.get('Account', 'N/A')):<34} ║")
-    print(f"║ 👤 Name:          {str(account_data.get('Name', 'N/A')):<34} ║")
-    print(f"║ 📧 Email:         {str(account_data.get('email', 'N/A')):<34} ║")
-    print("╠" + "═" * 48 + "╣")
-    print(f"║ 📝 Total TODOs:    {str(account_data.get('total_todos', 0)):<34} ║")
-    print(f"║ ⚡ Strikes:        {str(account_data.get('strike', 0)):<34} ║")
-    print(f"║ 🔥 Max Strikes:    {str(account_data.get('max_strike', 0)):<34} ║")
-    print("╚" + "═" * 48 + "╝" + "\n")
+    print("\n" + "╔" + "═" * 49 + "╗")
+    print("║" + "👤 ACCOUNT INFORMATION 👤".center(47) + "║")
+    print("╠" + "═" * 49 + "╣")
+    account_fields = [
+        ("🆔 Account Number", account_data.get("Account", "N/A")),
+        ("👤 Name", account_data.get("Name", "N/A")),
+        ("📧 Email", account_data.get("email", "N/A")),
+        ("📝 Total TODOs", account_data.get("total_todos", 0)),
+        ("⚡ Strikes", account_data.get("strike", 0)),
+        ("🔥 Max Strikes", account_data.get("max_strike", 0)),
+    ]
+
+    for label, value in account_fields[:3]:
+        print(f"║ {label:<18}: {str(value):<26} ║")
+
+    print("╠" + "═" * 49 + "╣")
+    for label, value in account_fields[3:]:
+        print(f"║ {label:<18}: {str(value):<26} ║")
+
+    print("╚" + "═" * 49 + "╝" + "\n")
 
 
 if __name__ == "__main__":
