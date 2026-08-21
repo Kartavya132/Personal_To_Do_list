@@ -109,6 +109,9 @@ def add_task(account):
     }
 
     if data.save_list(task):
+        account_stats = data.update_account_stats(account["Account"])
+        if account_stats:
+            account.update(account_stats)
         print("Task added successfully!")
         return task
 
@@ -152,6 +155,10 @@ def complete_task(account):
         print("That task series does not exist.")
         return None
 
+    account_stats = completed.pop("account_stats", None)
+    completed.pop("already_completed", None)
+    if account_stats:
+        account.update(account_stats)
     print(f"Task {series_number} completed successfully!")
     return completed
 

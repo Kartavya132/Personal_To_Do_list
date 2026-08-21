@@ -108,7 +108,12 @@ def load_list():
         return _normalise_columns(
             df,
             LIST_COLUMNS,
-            aliases={"Account": "acc_no", "acc": "acc_no", "account": "acc_no"},
+            aliases={
+                "Account": "acc_no",
+                "acc_no": "acc_no",
+                "acc": "acc_no",
+                "account": "acc_no",
+            },
         )
 
     except FileNotFoundError as e:
@@ -118,6 +123,51 @@ def load_list():
         return pd.DataFrame(columns=LIST_COLUMNS)
     except Exception:
         return None
+
+
+def update_account_stats(account):
+    """Recalculate and save task counters for one account."""
+    account_id = str(account).strip()
+    account_df = load_account()
+    task_df = load_list()
+    if account_df is None or task_df is None or "Account" not in account_df.columns:
+        return None
+
+    account_matches = account_df["Account"].astype(str).str.strip() == account_id
+    if not account_matches.any():
+        return None
+
+    if "acc_no" in task_df.columns:
+        account_tasks = task_df[task_df["acc_no"].astype(str).str.strip() == account_id]
+    else:
+        account_tasks = task_df.iloc[0:0]
+
+    total_todos = len(account_tasks)
+    completed_todos = int(
+        account_tasks.get("status", pd.Series(dtype=str))
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .eq("completed")
+        .sum()
+    )
+    account_index = account_df.index[account_matches][0]
+    previous_max = pd.to_numeric(
+        account_df.loc[account_index, "max_strike"], errors="coerce"
+    )
+    max_strike = max(
+        completed_todos, int(previous_max) if pd.notna(previous_max) else 0
+    )
+    account_df.loc[account_index, "total_todos"] = total_todos
+    account_df.loc[account_index, "strike"] = completed_todos
+    account_df.loc[account_index, "max_strike"] = max_strike
+    account_df.reindex(columns=ACCOUNT_COLUMNS).to_csv(DATA_ACC, index=False)
+
+    return {
+        "total_todos": total_todos,
+        "strike": completed_todos,
+        "max_strike": max_strike,
+    }
 
 
 def complete_task(account, series):
@@ -137,12 +187,19 @@ def complete_task(account, series):
             return None
 
         task_index = account_tasks.index[series_number - 1]
+        was_completed = (
+            str(task_df.loc[task_index, "status"]).strip().lower() == "completed"
+        )
         task_df.loc[task_index, "status"] = "completed"
         task_df.loc[task_index, "comp_date_time"] = datetime.now().isoformat(
             timespec="seconds"
         )
         task_df.to_csv(DATA_LIST, index=False)
-        return task_df.loc[task_index].to_dict()
+        account_stats = update_account_stats(account_id)
+        completed_task = task_df.loc[task_index].to_dict()
+        completed_task["account_stats"] = account_stats
+        completed_task["already_completed"] = was_completed
+        return completed_task
     except (TypeError, ValueError, KeyError):
         return None
 

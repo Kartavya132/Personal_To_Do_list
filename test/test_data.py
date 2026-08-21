@@ -81,7 +81,9 @@ def test_load_account_normalises_legacy_column_names(tmp_path, monkeypatch):
         (data.load_list, "DATA_LIST", data.LIST_COLUMNS),
     ],
 )
-def test_loaders_return_schema_for_header_only_csv(loader, path_name, columns, tmp_path, monkeypatch):
+def test_loaders_return_schema_for_header_only_csv(
+    loader, path_name, columns, tmp_path, monkeypatch
+):
     header_only = tmp_path / "header-only.csv"
     header_only.write_text(",".join(columns) + "\n", encoding="utf-8")
     monkeypatch.setattr(data, path_name, str(header_only))
@@ -161,6 +163,38 @@ def test_save_list_appends_to_existing_file_without_header(tmp_path, monkeypatch
 
     assert target.read_text(encoding="utf-8").count("Account,head") == 1
     assert list(pd.read_csv(target)["Account"]) == ["A1", "A2"]
+
+
+def test_complete_task_updates_selected_task_and_account_stats(tmp_path, monkeypatch):
+    account_file = tmp_path / "account.csv"
+    task_file = tmp_path / "list.csv"
+    account_file.write_text(
+        "Account,Name,Password,email,strike,total_todos,max_strike\n"
+        "A1,Alex,pw,a@example.com,0,0,0\n",
+        encoding="utf-8",
+    )
+    task_file.write_text(
+        "Account,head,detail,status,created_date_time,comp_date_time\n"
+        "A1,Read,Book,pending,2026-08-21T10:00:00,\n"
+        "A1,Write,Notes,completed,2026-08-21T11:00:00,2026-08-21T11:30:00\n"
+        "B2,Other,Task,pending,2026-08-21T12:00:00,\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(data, "DATA_ACC", str(account_file))
+    monkeypatch.setattr(data, "DATA_LIST", str(task_file))
+
+    result = data.complete_task("A1", 1)
+    saved_task = pd.read_csv(task_file)
+    saved_account = pd.read_csv(account_file)
+
+    assert result["status"] == "completed"
+    assert result["comp_date_time"]
+    assert saved_task.loc[0, "status"] == "completed"
+    assert saved_task.loc[0, "comp_date_time"]
+    assert saved_task.loc[2, "status"] == "pending"
+    assert saved_account.loc[0, "total_todos"] == 2
+    assert saved_account.loc[0, "strike"] == 2
+    assert saved_account.loc[0, "max_strike"] == 2
 
 
 @pytest.mark.parametrize(
