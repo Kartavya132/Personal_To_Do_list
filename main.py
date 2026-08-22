@@ -61,7 +61,7 @@ def main():
                 return
 
             print("⚠️  Login failed. Try a command below or re-enter your account.")
-            action = pt.prompts(input("👉 Command: "))
+            action = pt.prompts(input("👉 Retry or Exit: "))
             if action == "exit":
                 print_goodbye()
                 return

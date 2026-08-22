@@ -33,6 +33,17 @@ COMMANDS = {
         "description": "Adding a new task",
         "action": "add_task",
     },
+    "view_task": {
+        "keywords": [
+            ("view", "task"),
+            ("see", "task"),
+            ("see", "all", "task"),
+            ("watch", "task"),
+            ("check", "task"),
+        ],
+        "description": "See all all the task",
+        "action": "view_task",
+    },
     "complete_task": {
         "keywords": [
             ("complete", "task"),
@@ -89,14 +100,14 @@ def parse_command(user_input):
 
 def show_help():
     print("\n" + "╔" + "═" * 48 + "╗")
-    print("║" + "📚 AVAILABLE COMMANDS 📚".center(48) + "║")
+    print("║" + "📚 AVAILABLE COMMANDS 📚".center(45) + " ║")
     print("╠" + "═" * 48 + "╣")
 
     cmd_count = 1
     for cmd_name, cmd_info in COMMANDS.items():
         examples = " | ".join([" ".join(kw) for kw in cmd_info["keywords"][:2]])
-        print(f"║ {cmd_count}. {cmd_info['description'].title():<44} ║")
-        print(f"║    Example: {examples:<39} ║")
+        print(f"║ {cmd_count}. {cmd_info['description'].title():<43} ║")
+        print(f"║    Example: {examples:<34} ║")
         cmd_count += 1
 
     print("╚" + "═" * 48 + "╝" + "\n")

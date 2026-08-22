@@ -119,6 +119,34 @@ def add_task(account):
     return None
 
 
+def view_task(account):
+    """Display all tasks and activity belonging to the signed-in user."""
+    if not account or not account.get("Account"):
+        print("Please sign in before viewing your tasks.")
+        return None
+
+    task_df = data.load_list()
+    if task_df is None or task_df.empty or "acc_no" not in task_df.columns:
+        print("You do not have any tasks yet.")
+        return None
+
+    account_id = str(account["Account"]).strip()
+    account_tasks = task_df[task_df["acc_no"].astype(str).str.strip() == account_id]
+    if account_tasks.empty:
+        print("You do not have any tasks yet.")
+        return None
+
+    print("\nYour tasks and activity:")
+    for series, (_, task) in enumerate(account_tasks.iterrows(), start=1):
+        print(f"\n{series}. {task.get('head', 'Untitled')}")
+        print(f"   Details: {task.get('detail', '')}")
+        print(f"   Status: {task.get('status', 'pending')}")
+        print(f"   Created: {task.get('created_date_time', '')}")
+        print(f"   Completed: {task.get('comp_date_time', '')}")
+
+    return account_tasks.to_dict("records")
+
+
 def complete_task(account):
     """Let the signed-in user select a task and mark it as completed."""
     if not account or not account.get("Account"):
@@ -156,9 +184,12 @@ def complete_task(account):
         return None
 
     account_stats = completed.pop("account_stats", None)
-    completed.pop("already_completed", None)
+    already_completed = completed.pop("already_completed", False)
     if account_stats:
         account.update(account_stats)
+    if already_completed:
+        print(f"Task {series_number} was already completed.")
+        return completed
     print(f"Task {series_number} completed successfully!")
     return completed
 
@@ -195,6 +226,7 @@ def register_action(action, handler):
 register_action("create_account", lambda _account=None: acc_account())
 register_action("account_status", show_account_status)
 register_action("add_task", add_task)
+register_action("view_task", view_task)
 register_action("complete_task", complete_task)
 register_action("delete_account", delete_account)
 

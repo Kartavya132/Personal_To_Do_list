@@ -3,8 +3,12 @@ from datetime import datetime
 
 import pandas as pd
 
-DATA_ACC = "data/account.csv"
-DATA_LIST = "data/list.csv"
+# Store paths are based on this project, not on the directory from which the
+# program was started.  This keeps the application from silently reading or
+# creating a different pair of CSV files when it is launched elsewhere.
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+DATA_ACC = os.path.join(PROJECT_DIR, "data", "account.csv")
+DATA_LIST = os.path.join(PROJECT_DIR, "data", "list.csv")
 
 ACCOUNT_COLUMNS = [
     "Account",
@@ -43,6 +47,7 @@ def _normalise_columns(df, expected_columns, aliases=None):
         "email": "email",
         "strike": "strike",
         "total_todos": "total_todos",
+        "todo_totals": "total_todos",
         "max_strike": "max_strike",
         "sr_no": "sr_no",
         "head": "head",
@@ -190,11 +195,19 @@ def complete_task(account, series):
         was_completed = (
             str(task_df.loc[task_index, "status"]).strip().lower() == "completed"
         )
-        task_df.loc[task_index, "status"] = "completed"
-        task_df.loc[task_index, "comp_date_time"] = datetime.now().isoformat(
-            timespec="seconds"
-        )
-        task_df.to_csv(DATA_LIST, index=False)
+        # Completing an already completed task must not overwrite its original
+        # completion time.  We still refresh account statistics so legacy CSV
+        # data is repaired if necessary.
+        if not was_completed:
+            task_df.loc[task_index, "status"] = "completed"
+            task_df.loc[task_index, "comp_date_time"] = datetime.now().isoformat(
+                timespec="seconds"
+            )
+            # The existing CSV format uses ``Account``.  Keep that format on
+            # disk, while ``load_list`` exposes it as ``acc_no`` internally.
+            task_df.drop(columns="sr_no", errors="ignore").rename(
+                columns={"acc_no": "Account"}
+            ).to_csv(DATA_LIST, index=False)
         account_stats = update_account_stats(account_id)
         completed_task = task_df.loc[task_index].to_dict()
         completed_task["account_stats"] = account_stats

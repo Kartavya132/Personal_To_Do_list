@@ -180,3 +180,60 @@ def test_complete_task_selects_series_and_updates_task(monkeypatch):
     assert result["head"] == "Exercise"
     assert result["status"] == "completed"
     assert result["comp_date_time"]
+
+
+def test_view_task_shows_only_signed_in_users_tasks_and_activity(monkeypatch, capsys):
+    account = {"Account": "A123"}
+    tasks = pd.DataFrame(
+        [
+            {
+                "acc_no": "A123",
+                "head": "Study",
+                "detail": "Read chapter 1",
+                "status": "pending",
+                "created_date_time": "2026-08-21T10:00:00",
+                "comp_date_time": "",
+            },
+            {
+                "acc_no": "A123",
+                "head": "Exercise",
+                "detail": "Run 5 km",
+                "status": "completed",
+                "created_date_time": "2026-08-20T08:00:00",
+                "comp_date_time": "2026-08-21T12:00:00",
+            },
+            {"acc_no": "B456", "head": "Private task", "status": "pending"},
+        ]
+    )
+    monkeypatch.setattr(function.data, "load_list", lambda: tasks)
+
+    result = function.view_task(account)
+
+    output = capsys.readouterr().out
+    assert [task["head"] for task in result] == ["Study", "Exercise"]
+    assert "Your tasks and activity:" in output
+    assert "Read chapter 1" in output
+    assert "completed" in output
+    assert "2026-08-21T12:00:00" in output
+    assert "Private task" not in output
+
+
+def test_add_task_persists_incremented_todo_total(tmp_path, monkeypatch):
+    account_file = tmp_path / "account.csv"
+    task_file = tmp_path / "list.csv"
+    account_file.write_text(
+        "Account,Name,Password,email,strike,total_todos,max_strike\n"
+        "A123,Jane,pw,jane@example.com,0,0,0\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(data, "DATA_ACC", str(account_file))
+    monkeypatch.setattr(data, "DATA_LIST", str(task_file))
+    monkeypatch.setattr("builtins.input", lambda _prompt: "Study")
+
+    account = {"Account": "A123", "total_todos": 0, "strike": 0}
+    result = function.add_task(account)
+
+    saved_account = pd.read_csv(account_file)
+    assert result["head"] == "Study"
+    assert saved_account.loc[0, "total_todos"] == 1
+    assert account["total_todos"] == 1
