@@ -184,7 +184,7 @@ def complete_task(account, series):
 
         account_id = str(account).strip()
         series_number = int(series)
-        if series_number < 1:
+        if not account_id or series_number < 1:
             return None
 
         account_tasks = task_df[task_df["acc_no"].astype(str).str.strip() == account_id]
@@ -205,15 +205,16 @@ def complete_task(account, series):
             )
             # The existing CSV format uses ``Account``.  Keep that format on
             # disk, while ``load_list`` exposes it as ``acc_no`` internally.
-            task_df.drop(columns="sr_no", errors="ignore").rename(
+            saved = task_df.drop(columns="sr_no", errors="ignore").rename(
                 columns={"acc_no": "Account"}
-            ).to_csv(DATA_LIST, index=False)
+            )
+            saved.to_csv(DATA_LIST, index=False)
         account_stats = update_account_stats(account_id)
         completed_task = task_df.loc[task_index].to_dict()
         completed_task["account_stats"] = account_stats
         completed_task["already_completed"] = was_completed
         return completed_task
-    except (TypeError, ValueError, KeyError):
+    except (OSError, TypeError, ValueError, KeyError):
         return None
 
 

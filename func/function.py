@@ -174,13 +174,17 @@ def complete_task(account):
     selected_series = input("Enter the task series to complete: ").strip()
     try:
         series_number = int(selected_series)
-    except ValueError:
+    except (TypeError, ValueError):
         print("Please enter a valid task series number.")
+        return None
+
+    if series_number < 1 or series_number > len(account_tasks):
+        print("Please enter a task series number from the list.")
         return None
 
     completed = data.complete_task(account_id, series_number)
     if completed is None:
-        print("That task series does not exist.")
+        print("Unable to complete that task. Please try again.")
         return None
 
     account_stats = completed.pop("account_stats", None)
