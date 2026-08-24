@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from datetime import datetime, timedelta
 
 from func import data
 
@@ -195,6 +196,45 @@ def test_complete_task_updates_selected_task_and_account_stats(tmp_path, monkeyp
     assert saved_account.loc[0, "total_todos"] == 2
     assert saved_account.loc[0, "strike"] == 2
     assert saved_account.loc[0, "max_strike"] == 2
+
+
+def test_daily_stats_calculate_current_and_max_streak(tmp_path, monkeypatch):
+    account_file = tmp_path / "account.csv"
+    task_file = tmp_path / "list.csv"
+    account_file.write_text(
+        "Account,Name,Password,email,strike,total_todos,max_strike\n"
+        "A1,Alex,pw,a@example.com,0,0,0\n",
+        encoding="utf-8",
+    )
+    today = datetime.now().date()
+    dates = [today - timedelta(days=2), today - timedelta(days=1), today]
+    task_file.write_text(
+        "Account,head,detail,status,created_date_time,comp_date_time,todo_daily,task_date\n"
+        + "\n".join(
+            f"A1,Task {index},,completed,,{date.isoformat()}T10:00:00,True,{date.isoformat()}"
+            for index, date in enumerate(dates, start=1)
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(data, "DATA_ACC", str(account_file))
+    monkeypatch.setattr(data, "DATA_LIST", str(task_file))
+
+    result = data.update_account_stats("A1")
+
+    assert result == {"total_todos": 3, "strike": 3, "max_strike": 3}
+
+    task_file.write_text(
+        task_file.read_text(encoding="utf-8").replace(
+            f",{(today - timedelta(days=1)).isoformat()}\n",
+            f",{(today - timedelta(days=3)).isoformat()}\n",
+        ),
+        encoding="utf-8",
+    )
+    reset_result = data.update_account_stats("A1")
+
+    assert reset_result["strike"] == 1
+    assert reset_result["max_strike"] == 3
 
 
 @pytest.mark.parametrize(

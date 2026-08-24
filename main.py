@@ -34,8 +34,10 @@ def command_loop(current_user):
             return
 
         action = pt.prompts(user_command)
+
         if action in (None, "help"):
             continue
+
         if action == "exit":
             print_goodbye()
             return

@@ -27,6 +27,8 @@ LIST_COLUMNS = [
     "status",
     "created_date_time",
     "comp_date_time",
+    "todo_daily",
+    "task_date",
 ]
 
 
@@ -55,6 +57,9 @@ def _normalise_columns(df, expected_columns, aliases=None):
         "status": "status",
         "created_date_time": "created_date_time",
         "comp_date_time": "comp_date_time",
+        "todo_daily": "todo_daily",
+        "daily": "todo_daily",
+        "task_date": "task_date",
     }
     if aliases:
         alias_map.update(aliases)
@@ -135,8 +140,10 @@ def update_account_stats(account):
     account_id = str(account).strip()
     account_df = load_account()
     task_df = load_list()
-    if account_df is None or task_df is None or "Account" not in account_df.columns:
+    if account_df is None or "Account" not in account_df.columns:
         return None
+    if task_df is None:
+        task_df = pd.DataFrame(columns=LIST_COLUMNS)
 
     account_matches = account_df["Account"].astype(str).str.strip() == account_id
     if not account_matches.any():
@@ -156,21 +163,60 @@ def update_account_stats(account):
         .eq("completed")
         .sum()
     )
+    daily_tasks = account_tasks[
+        account_tasks.get("todo_daily", pd.Series(False, index=account_tasks.index))
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .isin(["true", "1", "yes", "y"])
+    ]
+    daily_dates = pd.to_datetime(
+        daily_tasks.get("task_date", pd.Series(dtype=str)), errors="coerce"
+    )
+    fallback_dates = pd.to_datetime(
+        daily_tasks.get("created_date_time", pd.Series(dtype=str)), errors="coerce"
+    )
+    daily_dates = daily_dates.fillna(fallback_dates).dt.date.dropna()
+
+    if daily_tasks.empty:
+        # Preserve the completed-count behavior for legacy accounts.
+        current_strike = completed_todos
+        calculated_max = completed_todos
+    else:
+        completed_dates = set(daily_dates)
+        current_day = datetime.now().date()
+        current_strike = 0
+        while current_day in completed_dates:
+            current_strike += 1
+            current_day = current_day.fromordinal(current_day.toordinal() - 1)
+
+        calculated_max = 0
+        for completed_day in sorted(completed_dates):
+            streak = 1
+            previous_day = completed_day.fromordinal(completed_day.toordinal() - 1)
+            while previous_day in completed_dates:
+                streak += 1
+                previous_day = previous_day.fromordinal(previous_day.toordinal() - 1)
+            calculated_max = max(calculated_max, streak)
+
     account_index = account_df.index[account_matches][0]
     previous_max = pd.to_numeric(
-        account_df.loc[account_index, "max_strike"], errors="coerce"
+        (
+            account_df.loc[account_index, "max_strike"]
+            if "max_strike" in account_df.columns
+            else 0
+        ),
+        errors="coerce",
     )
-    max_strike = max(
-        completed_todos, int(previous_max) if pd.notna(previous_max) else 0
-    )
+    max_strike = max(calculated_max, int(previous_max) if pd.notna(previous_max) else 0)
     account_df.loc[account_index, "total_todos"] = total_todos
-    account_df.loc[account_index, "strike"] = completed_todos
+    account_df.loc[account_index, "strike"] = current_strike
     account_df.loc[account_index, "max_strike"] = max_strike
     account_df.reindex(columns=ACCOUNT_COLUMNS).to_csv(DATA_ACC, index=False)
 
     return {
         "total_todos": total_todos,
-        "strike": completed_todos,
+        "strike": current_strike,
         "max_strike": max_strike,
     }
 
@@ -300,6 +346,8 @@ def save_list(list_data):
                 "status",
                 "created_date_time",
                 "comp_date_time",
+                "todo_daily",
+                "task_date",
             ]:
                 if field not in frame.columns:
                     frame[field] = pd.NA
@@ -314,6 +362,8 @@ def save_list(list_data):
                         "status",
                         "created_date_time",
                         "comp_date_time",
+                        "todo_daily",
+                        "task_date",
                     ]
                     if field in frame.columns
                 ]

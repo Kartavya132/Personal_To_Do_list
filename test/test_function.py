@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 import pytest
 
@@ -235,5 +237,30 @@ def test_add_task_persists_incremented_todo_total(tmp_path, monkeypatch):
 
     saved_account = pd.read_csv(account_file)
     assert result["head"] == "Study"
+    assert result["todo_daily"] is True
+    assert result["task_date"] == datetime.now().date().isoformat()
     assert saved_account.loc[0, "total_todos"] == 1
+    assert saved_account.loc[0, "strike"] == 1
     assert account["total_todos"] == 1
+    assert pd.read_csv(task_file).loc[0, "todo_daily"]
+
+
+def test_add_daily_task_persists_daily_marker_and_date(tmp_path, monkeypatch):
+    account_file = tmp_path / "account.csv"
+    task_file = tmp_path / "list.csv"
+    account_file.write_text(
+        "Account,Name,Password,email,strike,total_todos,max_strike\n"
+        "A123,Jane,pw,jane@example.com,0,0,0\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(data, "DATA_ACC", str(account_file))
+    monkeypatch.setattr(data, "DATA_LIST", str(task_file))
+    answers = iter(["Exercise", "Daily movement"])
+    monkeypatch.setattr("builtins.input", lambda _prompt: next(answers))
+
+    result = function.add_daily_task({"Account": "A123"})
+
+    saved_task = pd.read_csv(task_file)
+    assert result["todo_daily"] is True
+    assert bool(saved_task.loc[0, "todo_daily"]) is True
+    assert saved_task.loc[0, "task_date"] == datetime.now().date().isoformat()

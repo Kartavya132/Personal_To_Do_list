@@ -22,6 +22,15 @@ COMMANDS = {
         "description": "View your account and account status",
         "action": "account_status",
     },
+    "add_daily_task": {
+        "keywords": [
+            ("add", "daily", "task"),
+            ("new", "daily", "task"),
+            ("daily", "task"),
+        ],
+        "description": "Add a task to your daily streak",
+        "action": "add_daily_task",
+    },
     "add_task": {
         "keywords": [
             ("add", "task"),

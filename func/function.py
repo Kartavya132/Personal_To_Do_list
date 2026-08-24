@@ -74,7 +74,12 @@ def check_account(account=None, password=None):
         print("Incorrect password.")
         return None
 
-    return match.iloc[0].to_dict()
+    account_data = match.iloc[0].to_dict()
+    if {"strike", "total_todos", "max_strike"}.issubset(account_data):
+        account_stats = data.update_account_stats(account_value)
+        if account_stats:
+            account_data.update(account_stats)
+    return account_data
 
 
 def show_account_status(account):
@@ -87,8 +92,12 @@ def show_account_status(account):
     return account
 
 
-def add_task(account):
-    """Collect and save one task for the signed-in account."""
+def add_task(account, todo_daily=True):
+    """Collect and save one task for the signed-in account.
+
+    Every task added through the normal command is a daily task, so completing
+    it contributes to the account streak.
+    """
     if not account or not account.get("Account"):
         print("Please sign in before adding a task.")
         return None
@@ -106,6 +115,8 @@ def add_task(account):
         "status": "pending",
         "created_date_time": datetime.now().isoformat(timespec="seconds"),
         "comp_date_time": "",
+        "todo_daily": bool(todo_daily),
+        "task_date": datetime.now().date().isoformat() if todo_daily else "",
     }
 
     if data.save_list(task):
@@ -117,6 +128,11 @@ def add_task(account):
 
     print("Unable to save the task. Please try again.")
     return None
+
+
+def add_daily_task(account):
+    """Collect and save a task that contributes to the daily streak."""
+    return add_task(account, todo_daily=True)
 
 
 def view_task(account):
@@ -230,6 +246,7 @@ def register_action(action, handler):
 register_action("create_account", lambda _account=None: acc_account())
 register_action("account_status", show_account_status)
 register_action("add_task", add_task)
+register_action("add_daily_task", add_daily_task)
 register_action("view_task", view_task)
 register_action("complete_task", complete_task)
 register_action("delete_account", delete_account)
