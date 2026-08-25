@@ -1,7 +1,17 @@
+import os
 import random
+import re
 from datetime import datetime
 
+import matplotlib
+import pandas as pd
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
 from . import data
+
+IMAGE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "image"))
 
 
 def acc_account():
@@ -163,6 +173,66 @@ def view_task(account):
     return account_tasks.to_dict("records")
 
 
+def view_task_graph(account):
+    """Save the signed-in user's task counts by date and status as a PNG."""
+    if not account or not account.get("Account"):
+        print("Please sign in before viewing your task graph.")
+        return None
+
+    task_df = data.load_list()
+    if task_df is None or task_df.empty or "acc_no" not in task_df.columns:
+        print("You do not have any tasks to graph.")
+        return None
+
+    account_id = str(account["Account"]).strip()
+    account_tasks = task_df[
+        task_df["acc_no"].astype(str).str.strip() == account_id
+    ].copy()
+    if account_tasks.empty:
+        print("You do not have any tasks to graph.")
+        return None
+
+    task_dates = pd.to_datetime(
+        account_tasks.get("task_date", pd.Series(index=account_tasks.index)),
+        errors="coerce",
+    )
+    created_dates = pd.to_datetime(
+        account_tasks.get("created_date_time", pd.Series(index=account_tasks.index)),
+        errors="coerce",
+    )
+    account_tasks["graph_date"] = task_dates.fillna(created_dates).dt.date
+    account_tasks = account_tasks.dropna(subset=["graph_date"])
+    if account_tasks.empty:
+        print("Your tasks do not contain usable dates for a graph.")
+        return None
+
+    account_tasks["status"] = (
+        account_tasks.get("status", pd.Series("pending", index=account_tasks.index))
+        .fillna("pending")
+        .astype(str)
+        .str.strip()
+        .str.title()
+    )
+    counts = (
+        account_tasks.groupby(["graph_date", "status"]).size().unstack(fill_value=0)
+    )
+    figure, axis = plt.subplots()
+    counts.plot(ax=axis, marker="o")
+    axis.set_title("To-Do Activity")
+    axis.set_xlabel("Task Date")
+    axis.set_ylabel("Number of Tasks")
+    axis.legend(title="Status")
+    figure.autofmt_xdate()
+    figure.tight_layout()
+    os.makedirs(IMAGE_DIR, exist_ok=True)
+    safe_account_id = re.sub(r"[^A-Za-z0-9_.-]", "_", account_id)
+    image_path = os.path.join(IMAGE_DIR, f"task_graph_{safe_account_id}.png")
+    figure.savefig(image_path, dpi=150, bbox_inches="tight")
+    plt.close(figure)
+    print(f"Task graph saved to: {image_path}")
+    return image_path
+
+
 def complete_task(account):
     """Let the signed-in user select a task and mark it as completed."""
     if not account or not account.get("Account"):
@@ -248,6 +318,7 @@ register_action("account_status", show_account_status)
 register_action("add_task", add_task)
 register_action("add_daily_task", add_daily_task)
 register_action("view_task", view_task)
+register_action("view_task_graph", view_task_graph)
 register_action("complete_task", complete_task)
 register_action("delete_account", delete_account)
 

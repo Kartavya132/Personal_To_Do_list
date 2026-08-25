@@ -42,6 +42,16 @@ COMMANDS = {
         "description": "Adding a new task",
         "action": "add_task",
     },
+    "view_task_graph": {
+        "keywords": [
+            ("view", "task", "graph"),
+            ("view", "graph"),
+            ("task", "graph"),
+            ("graph", "task"),
+        ],
+        "description": "View your task graph",
+        "action": "view_task_graph",
+    },
     "view_task": {
         "keywords": [
             ("view", "task"),

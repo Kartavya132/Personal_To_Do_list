@@ -45,3 +45,8 @@ def test_prompts_rejects_invalid_or_case_mismatched_phrases(value, capsys):
 
 def test_prompts_accepts_case_insensitive_commands():
     assert prompt.prompts("CREATE ACCOUNT") == "create_account"
+
+
+@pytest.mark.parametrize("value", ["view task graph", "view graph", "graph task"])
+def test_prompts_accepts_task_graph_commands(value):
+    assert prompt.prompts(value) == "view_task_graph"

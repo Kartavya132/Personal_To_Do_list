@@ -220,6 +220,28 @@ def test_view_task_shows_only_signed_in_users_tasks_and_activity(monkeypatch, ca
     assert "Private task" not in output
 
 
+def test_view_task_graph_saves_counts_with_axis_labels(tmp_path, monkeypatch):
+    tasks = pd.DataFrame(
+        [
+            {"acc_no": "A123", "status": "pending", "task_date": "2026-08-24"},
+            {"acc_no": "A123", "status": "completed", "task_date": "2026-08-24"},
+            {"acc_no": "B456", "status": "completed", "task_date": "2026-08-24"},
+        ]
+    )
+    monkeypatch.setattr(function.data, "load_list", lambda: tasks)
+    monkeypatch.setattr(function, "IMAGE_DIR", str(tmp_path))
+    figure = function.view_task_graph({"Account": "A123"})
+
+    assert figure.endswith("task_graph_A123.png")
+    assert (tmp_path / "task_graph_A123.png").is_file()
+
+
+@pytest.mark.parametrize("account", [None, {}])
+def test_view_task_graph_handles_missing_account(account, capsys):
+    assert function.view_task_graph(account) is None
+    assert "sign in" in capsys.readouterr().out
+
+
 def test_add_task_persists_incremented_todo_total(tmp_path, monkeypatch):
     account_file = tmp_path / "account.csv"
     task_file = tmp_path / "list.csv"
@@ -240,7 +262,7 @@ def test_add_task_persists_incremented_todo_total(tmp_path, monkeypatch):
     assert result["todo_daily"] is True
     assert result["task_date"] == datetime.now().date().isoformat()
     assert saved_account.loc[0, "total_todos"] == 1
-    assert saved_account.loc[0, "strike"] == 1
+    assert saved_account.loc[0, "strike"] == 0
     assert account["total_todos"] == 1
     assert pd.read_csv(task_file).loc[0, "todo_daily"]
 

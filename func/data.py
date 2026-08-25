@@ -170,20 +170,24 @@ def update_account_stats(account):
         .str.lower()
         .isin(["true", "1", "yes", "y"])
     ]
-    daily_dates = pd.to_datetime(
-        daily_tasks.get("task_date", pd.Series(dtype=str)), errors="coerce"
-    )
-    fallback_dates = pd.to_datetime(
-        daily_tasks.get("created_date_time", pd.Series(dtype=str)), errors="coerce"
-    )
-    daily_dates = daily_dates.fillna(fallback_dates).dt.date.dropna()
 
     if daily_tasks.empty:
         # Preserve the completed-count behavior for legacy accounts.
         current_strike = completed_todos
         calculated_max = completed_todos
     else:
-        completed_dates = set(daily_dates)
+        completed_daily_tasks = daily_tasks[
+            daily_tasks["status"].astype(str).str.strip().str.lower().eq("completed")
+        ]
+        daily_dates = pd.to_datetime(
+            completed_daily_tasks.get("task_date", pd.Series(dtype=str)),
+            errors="coerce",
+        )
+        fallback_dates = pd.to_datetime(
+            completed_daily_tasks.get("created_date_time", pd.Series(dtype=str)),
+            errors="coerce",
+        )
+        completed_dates = set(daily_dates.fillna(fallback_dates).dt.date.dropna())
         current_day = datetime.now().date()
         current_strike = 0
         while current_day in completed_dates:
