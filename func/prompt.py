@@ -99,7 +99,7 @@ def parse_command(user_input):
     if user_input is None:
         return None
 
-    cleaned = user_input.strip()
+    cleaned = str(user_input).strip()
     if not cleaned:
         return None
 
@@ -139,15 +139,16 @@ def prompts(user_input):
     the returned action to the matching function, where account and data work
     belongs.
     """
-    if not user_input or not user_input.strip():
+    if user_input is None or not str(user_input).strip():
         print("Invalid command. Type 'help' to see the available commands.")
         return None
 
-    if user_input.strip().lower() in ["help", "?", "h"]:
+    cleaned_input = str(user_input).strip()
+    if cleaned_input.lower() in ["help", "?", "h"]:
         show_help()
         return "help"
 
-    result = parse_command(user_input)
+    result = parse_command(cleaned_input)
 
     if result is None:
         print("Invalid command. Type 'help' to see the available commands.")

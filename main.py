@@ -48,7 +48,11 @@ def command_loop(current_user):
 def main():
     while True:
         print_box("Welcome to To-Do list")
-        question = input("📋 Do you have an account? (yes/no): ").strip().lower()
+        try:
+            question = input("📋 Do you have an account? (yes/no): ").strip().lower()
+        except (EOFError, StopIteration):
+            print_goodbye()
+            return
 
         if question in ["y", "yes"]:
             print_separator()
