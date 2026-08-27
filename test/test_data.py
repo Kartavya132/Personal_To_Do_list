@@ -248,3 +248,38 @@ def test_savers_return_false_for_invalid_input(
 
     assert saver(object()) is False
     assert "Error saving" in capsys.readouterr().out
+
+
+def test_delete_account_removes_tasks_and_preserves_list_disk_schema(
+    tmp_path, monkeypatch
+):
+    account_file = tmp_path / "account.csv"
+    task_file = tmp_path / "list.csv"
+    account_file.write_text(
+        "Account,Name,Password,email,strike,total_todos,max_strike\n"
+        "A1,Alice,pw,a@example.com,0,1,0\n"
+        "B2,Bob,pw,b@example.com,0,1,0\n",
+        encoding="utf-8",
+    )
+    task_file.write_text(
+        "Account,head,detail,status,created_date_time,comp_date_time,todo_daily,task_date\n"
+        "A1,Task A,,pending,2026-08-27T09:00:00,,True,2026-08-27\n"
+        "B2,Task B,,pending,2026-08-27T09:00:00,,True,2026-08-27\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(data, "DATA_ACC", str(account_file))
+    monkeypatch.setattr(data, "DATA_LIST", str(task_file))
+
+    assert data.delete_account("A1") is True
+
+    assert list(pd.read_csv(task_file).columns) == [
+        "Account",
+        "head",
+        "detail",
+        "status",
+        "created_date_time",
+        "comp_date_time",
+        "todo_daily",
+        "task_date",
+    ]
+    assert pd.read_csv(task_file)["Account"].tolist() == ["B2"]

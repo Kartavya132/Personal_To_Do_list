@@ -320,7 +320,13 @@ def delete_account(account):
     task_df = load_list()
     if task_df is not None and "acc_no" in task_df.columns:
         task_matches = task_df["acc_no"].astype(str).str.strip() == account_id
-        task_df.loc[~task_matches].to_csv(DATA_LIST, index=False)
+        remaining_tasks = (
+            task_df.loc[~task_matches]
+            .drop(columns=["sr_no"], errors="ignore")
+            .rename(columns={"acc_no": "Account"})
+            .reindex(columns=["Account"] + LIST_COLUMNS[2:])
+        )
+        remaining_tasks.to_csv(DATA_LIST, index=False)
 
     return True
 

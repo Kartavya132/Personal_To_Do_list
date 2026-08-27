@@ -1,2 +1,14 @@
 Account,Name,Password,email,strike,total_todos,max_strike
  A123 ,Jane Doe, secret ,jane@example.com,0,3,2
+B456,Ben Carter,daily,ben.carter@example.com,0,2,2
+C789,Chloe Singh,welcome,chloe.singh@example.com,0,1,0
+Dd1,Daniel Diaz,focus1,daniel.diaz@example.com,3,7,3
+Ef2,Emma Foster,focus2,emma.foster@example.com,0,7,3
+Gh3,Grace Hall,focus3,grace.hall@example.com,0,7,1
+Jk4,Jacob Kim,focus4,jacob.kim@example.com,2,7,2
+Lm5,Leah Morgan,focus5,leah.morgan@example.com,1,7,1
+Np6,Noah Patel,focus6,noah.patel@example.com,0,7,0
+Qr7,Quinn Reed,focus7,quinn.reed@example.com,3,7,3
+St8,Sofia Torres,focus8,sofia.torres@example.com,0,7,2
+Vw9,Victor Wong,focus9,victor.wong@example.com,2,7,2
+Xy0,Yasmin Ali,focus0,yasmin.ali@example.com,0,7,0

@@ -5,3 +5,73 @@ A123,Build a small feature,Choose one focused improvement and implement it.,pend
 B456,Morning movement,Take a short walk before starting work.,completed,2026-08-25T07:30:00,2026-08-25T08:00:00,True,2026-08-25
 B456,Practice Python,Complete one small exercise with tests.,completed,2026-08-26T11:00:00,2026-08-26T11:30:00,True,2026-08-26
 C789,Organize workspace,Clear the desk and group active notes.,pending,2026-08-26T08:30:00,,True,2026-08-26
+Dd1,Review daily goals,Check priorities and update the day plan.,completed,2026-08-20T08:00:00,2026-08-20T17:30:00,True,2026-08-20
+Dd1,Focus work session,Work without distractions for twenty-five minutes.,completed,2026-08-25T09:00:00,2026-08-25T18:30:00,True,2026-08-25
+Dd1,Learn a new skill,Spend time practising a useful topic.,completed,2026-08-26T10:00:00,2026-08-26T17:30:00,True,2026-08-26
+Dd1,Health check-in,Complete a short activity and drink water.,completed,2026-08-27T11:00:00,2026-08-27T18:30:00,True,2026-08-27
+Dd1,Organize notes,File recent notes where they are easy to find.,pending,2026-08-27T12:00:00,,True,2026-08-27
+Dd1,Connect with someone,Send a thoughtful message to a friend or colleague.,pending,2026-08-28T13:00:00,,True,2026-08-28
+Dd1,Prepare tomorrow,List the next day's most important tasks.,pending,2026-08-29T14:00:00,,True,2026-08-29
+Ef2,Review daily goals,Check priorities and update the day plan.,completed,2026-08-21T08:00:00,2026-08-21T17:30:00,True,2026-08-21
+Ef2,Focus work session,Work without distractions for twenty-five minutes.,completed,2026-08-22T09:00:00,2026-08-22T18:30:00,True,2026-08-22
+Ef2,Learn a new skill,Spend time practising a useful topic.,completed,2026-08-23T10:00:00,2026-08-23T17:30:00,True,2026-08-23
+Ef2,Health check-in,Complete a short activity and drink water.,pending,2026-08-24T11:00:00,,True,2026-08-24
+Ef2,Organize notes,File recent notes where they are easy to find.,pending,2026-08-25T12:00:00,,True,2026-08-25
+Ef2,Connect with someone,Send a thoughtful message to a friend or colleague.,pending,2026-08-26T13:00:00,,True,2026-08-26
+Ef2,Prepare tomorrow,List the next day's most important tasks.,pending,2026-08-27T14:00:00,,True,2026-08-27
+Gh3,Review daily goals,Check priorities and update the day plan.,completed,2026-08-21T08:00:00,2026-08-21T17:30:00,True,2026-08-21
+Gh3,Focus work session,Work without distractions for twenty-five minutes.,completed,2026-08-23T09:00:00,2026-08-23T18:30:00,True,2026-08-23
+Gh3,Learn a new skill,Spend time practising a useful topic.,completed,2026-08-25T10:00:00,2026-08-25T17:30:00,True,2026-08-25
+Gh3,Health check-in,Complete a short activity and drink water.,pending,2026-08-26T11:00:00,,True,2026-08-26
+Gh3,Organize notes,File recent notes where they are easy to find.,pending,2026-08-27T12:00:00,,True,2026-08-27
+Gh3,Connect with someone,Send a thoughtful message to a friend or colleague.,pending,2026-08-28T13:00:00,,True,2026-08-28
+Gh3,Prepare tomorrow,List the next day's most important tasks.,pending,2026-08-29T14:00:00,,True,2026-08-29
+Jk4,Review daily goals,Check priorities and update the day plan.,completed,2026-08-20T08:00:00,2026-08-20T17:30:00,True,2026-08-20
+Jk4,Focus work session,Work without distractions for twenty-five minutes.,pending,2026-08-22T09:00:00,,True,2026-08-22
+Jk4,Learn a new skill,Spend time practising a useful topic.,pending,2026-08-23T10:00:00,,True,2026-08-23
+Jk4,Health check-in,Complete a short activity and drink water.,pending,2026-08-24T11:00:00,,True,2026-08-24
+Jk4,Organize notes,File recent notes where they are easy to find.,pending,2026-08-25T12:00:00,,True,2026-08-25
+Jk4,Connect with someone,Send a thoughtful message to a friend or colleague.,completed,2026-08-26T13:00:00,2026-08-26T18:30:00,True,2026-08-26
+Jk4,Prepare tomorrow,List the next day's most important tasks.,completed,2026-08-27T14:00:00,2026-08-27T17:30:00,True,2026-08-27
+Lm5,Review daily goals,Check priorities and update the day plan.,completed,2026-08-18T08:00:00,2026-08-18T17:30:00,True,2026-08-18
+Lm5,Focus work session,Work without distractions for twenty-five minutes.,pending,2026-08-21T09:00:00,,True,2026-08-21
+Lm5,Learn a new skill,Spend time practising a useful topic.,pending,2026-08-22T10:00:00,,True,2026-08-22
+Lm5,Health check-in,Complete a short activity and drink water.,pending,2026-08-23T11:00:00,,True,2026-08-23
+Lm5,Organize notes,File recent notes where they are easy to find.,pending,2026-08-24T12:00:00,,True,2026-08-24
+Lm5,Connect with someone,Send a thoughtful message to a friend or colleague.,pending,2026-08-25T13:00:00,,True,2026-08-25
+Lm5,Prepare tomorrow,List the next day's most important tasks.,completed,2026-08-27T14:00:00,2026-08-27T17:30:00,True,2026-08-27
+Np6,Review daily goals,Check priorities and update the day plan.,pending,2026-08-21T08:00:00,,True,2026-08-21
+Np6,Focus work session,Work without distractions for twenty-five minutes.,pending,2026-08-22T09:00:00,,True,2026-08-22
+Np6,Learn a new skill,Spend time practising a useful topic.,pending,2026-08-23T10:00:00,,True,2026-08-23
+Np6,Health check-in,Complete a short activity and drink water.,pending,2026-08-24T11:00:00,,True,2026-08-24
+Np6,Organize notes,File recent notes where they are easy to find.,pending,2026-08-25T12:00:00,,True,2026-08-25
+Np6,Connect with someone,Send a thoughtful message to a friend or colleague.,pending,2026-08-26T13:00:00,,True,2026-08-26
+Np6,Prepare tomorrow,List the next day's most important tasks.,pending,2026-08-27T14:00:00,,True,2026-08-27
+Qr7,Review daily goals,Check priorities and update the day plan.,completed,2026-08-21T08:00:00,2026-08-21T17:30:00,True,2026-08-21
+Qr7,Focus work session,Work without distractions for twenty-five minutes.,pending,2026-08-22T09:00:00,,True,2026-08-22
+Qr7,Learn a new skill,Spend time practising a useful topic.,pending,2026-08-23T10:00:00,,True,2026-08-23
+Qr7,Health check-in,Complete a short activity and drink water.,pending,2026-08-24T11:00:00,,True,2026-08-24
+Qr7,Organize notes,File recent notes where they are easy to find.,completed,2026-08-25T12:00:00,2026-08-25T17:30:00,True,2026-08-25
+Qr7,Connect with someone,Send a thoughtful message to a friend or colleague.,completed,2026-08-26T13:00:00,2026-08-26T18:30:00,True,2026-08-26
+Qr7,Prepare tomorrow,List the next day's most important tasks.,completed,2026-08-27T14:00:00,2026-08-27T17:30:00,True,2026-08-27
+St8,Review daily goals,Check priorities and update the day plan.,completed,2026-08-19T08:00:00,2026-08-19T17:30:00,True,2026-08-19
+St8,Focus work session,Work without distractions for twenty-five minutes.,completed,2026-08-22T09:00:00,2026-08-22T18:30:00,True,2026-08-22
+St8,Learn a new skill,Spend time practising a useful topic.,completed,2026-08-23T10:00:00,2026-08-23T17:30:00,True,2026-08-23
+St8,Health check-in,Complete a short activity and drink water.,pending,2026-08-24T11:00:00,,True,2026-08-24
+St8,Organize notes,File recent notes where they are easy to find.,pending,2026-08-25T12:00:00,,True,2026-08-25
+St8,Connect with someone,Send a thoughtful message to a friend or colleague.,pending,2026-08-26T13:00:00,,True,2026-08-26
+St8,Prepare tomorrow,List the next day's most important tasks.,pending,2026-08-27T14:00:00,,True,2026-08-27
+Vw9,Review daily goals,Check priorities and update the day plan.,completed,2026-08-22T08:00:00,2026-08-22T17:30:00,True,2026-08-22
+Vw9,Focus work session,Work without distractions for twenty-five minutes.,pending,2026-08-23T09:00:00,,True,2026-08-23
+Vw9,Learn a new skill,Spend time practising a useful topic.,pending,2026-08-24T10:00:00,,True,2026-08-24
+Vw9,Health check-in,Complete a short activity and drink water.,pending,2026-08-25T11:00:00,,True,2026-08-25
+Vw9,Organize notes,File recent notes where they are easy to find.,completed,2026-08-26T12:00:00,2026-08-26T17:30:00,True,2026-08-26
+Vw9,Connect with someone,Send a thoughtful message to a friend or colleague.,completed,2026-08-27T13:00:00,2026-08-27T18:30:00,True,2026-08-27
+Vw9,Prepare tomorrow,List the next day's most important tasks.,pending,2026-08-28T14:00:00,,True,2026-08-28
+Xy0,Review daily goals,Check priorities and update the day plan.,pending,2026-08-21T08:00:00,,True,2026-08-21
+Xy0,Focus work session,Work without distractions for twenty-five minutes.,pending,2026-08-22T09:00:00,,True,2026-08-22
+Xy0,Learn a new skill,Spend time practising a useful topic.,pending,2026-08-23T10:00:00,,True,2026-08-23
+Xy0,Health check-in,Complete a short activity and drink water.,pending,2026-08-24T11:00:00,,True,2026-08-24
+Xy0,Organize notes,File recent notes where they are easy to find.,pending,2026-08-25T12:00:00,,True,2026-08-25
+Xy0,Connect with someone,Send a thoughtful message to a friend or colleague.,pending,2026-08-26T13:00:00,,True,2026-08-26
+Xy0,Prepare tomorrow,List the next day's most important tasks.,pending,2026-08-27T14:00:00,,True,2026-08-27

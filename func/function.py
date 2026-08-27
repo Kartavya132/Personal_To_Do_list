@@ -7,6 +7,7 @@ import matplotlib
 import pandas as pd
 
 matplotlib.use("Agg")
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 
 from . import data
@@ -213,16 +214,24 @@ def view_task_graph(account):
         .str.strip()
         .str.title()
     )
-    counts = (
-        account_tasks.groupby(["graph_date", "status"]).size().unstack(fill_value=0)
-    )
-    figure, axis = plt.subplots()
-    counts.plot(ax=axis, marker="o")
-    axis.set_title("To-Do Activity")
-    axis.set_xlabel("Task Date")
+    counts = account_tasks.groupby(["graph_date", "status"]).size().unstack(fill_value=0)
+    counts.index = pd.to_datetime(counts.index)
+    counts = counts.sort_index()
+
+    figure, axis = plt.subplots(figsize=(10, 5.5))
+    counts.plot(ax=axis, marker="o", linewidth=2, markersize=6)
+    account_name = str(account.get("Name", account_id)).strip() or account_id
+    axis.set_title(f"To-Do Activity — {account_name}", pad=14)
+    axis.set_xlabel("Task Date", labelpad=10)
     axis.set_ylabel("Number of Tasks")
-    axis.legend(title="Status")
-    figure.autofmt_xdate()
+    axis.set_ylim(bottom=0)
+    axis.grid(axis="y", linestyle="--", alpha=0.4)
+    axis.legend(title="Status", frameon=False)
+
+    locator = mdates.AutoDateLocator(minticks=3, maxticks=8)
+    axis.xaxis.set_major_locator(locator)
+    axis.xaxis.set_major_formatter(mdates.ConciseDateFormatter(locator))
+    plt.setp(axis.get_xticklabels(), rotation=35, ha="right")
     figure.tight_layout()
     os.makedirs(IMAGE_DIR, exist_ok=True)
     safe_account_id = re.sub(r"[^A-Za-z0-9_.-]", "_", account_id)
@@ -231,6 +240,27 @@ def view_task_graph(account):
     plt.close(figure)
     print(f"Task graph saved to: {image_path}")
     return image_path
+
+
+def generate_all_task_graphs():
+    """Generate one account-specific activity graph for every saved account."""
+    account_df = data.load_account()
+    if account_df is None or account_df.empty:
+        print("No accounts are available for graph generation.")
+        return {}
+
+    graph_paths = {}
+    for account in account_df.to_dict("records"):
+        account_id = str(account.get("Account", "")).strip()
+        if not account_id:
+            continue
+
+        image_path = view_task_graph(account)
+        if image_path:
+            graph_paths[account_id] = image_path
+
+    print(f"Generated {len(graph_paths)} task graph(s) in: {IMAGE_DIR}")
+    return graph_paths
 
 
 def complete_task(account):

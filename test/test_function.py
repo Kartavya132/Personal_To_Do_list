@@ -24,6 +24,7 @@ def account_frame(password="secret"):
 
 def test_check_account_accepts_trimmed_credentials(monkeypatch):
     monkeypatch.setattr(data, "load_account", lambda: account_frame())
+    monkeypatch.setattr(data, "update_account_stats", lambda _account: None)
 
     result = function.check_account("  A123 ", " secret ")
 
@@ -45,6 +46,7 @@ def test_check_account_handles_missing_or_empty_account_store(
 
 def test_check_account_reads_credentials_interactively(monkeypatch):
     monkeypatch.setattr(data, "load_account", lambda: account_frame())
+    monkeypatch.setattr(data, "update_account_stats", lambda _account: None)
     answers = iter(["A123", "secret"])
     monkeypatch.setattr("builtins.input", lambda _: next(answers))
 
@@ -234,6 +236,26 @@ def test_view_task_graph_saves_counts_with_axis_labels(tmp_path, monkeypatch):
 
     assert figure.endswith("task_graph_A123.png")
     assert (tmp_path / "task_graph_A123.png").is_file()
+
+
+def test_generate_all_task_graphs_creates_one_graph_per_account(monkeypatch):
+    accounts = pd.DataFrame(
+        [
+            {"Account": "A123", "Name": "Alice"},
+            {"Account": "B456", "Name": "Bob"},
+        ]
+    )
+    monkeypatch.setattr(function.data, "load_account", lambda: accounts)
+    monkeypatch.setattr(
+        function,
+        "view_task_graph",
+        lambda account: f"/graphs/task_graph_{account['Account']}.png",
+    )
+
+    assert function.generate_all_task_graphs() == {
+        "A123": "/graphs/task_graph_A123.png",
+        "B456": "/graphs/task_graph_B456.png",
+    }
 
 
 @pytest.mark.parametrize("account", [None, {}])
